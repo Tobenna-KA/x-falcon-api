@@ -1,0 +1,6 @@
+module.exports.secret = 'secret'
+module.exports.MONGODB_URI = 'mongodb://heroku_kpjg5783:j4aam4q9pk6ef66qrvidmdqs70@ds121834.mlab.com:21834/heroku_kpjg5783'
+module.exports.MG_API_KEY = 'key-4de177825b7fed94eee3e8d62f3487a4'
+module.exports.DOMAIN = 'https://tasks.com'
+module.exports.SG_API_KEY = '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'
+module.exports.ADMIN_MAIL = 'admin@tasks.com'
