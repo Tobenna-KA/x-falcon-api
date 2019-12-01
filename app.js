@@ -10,10 +10,12 @@ let user = require('./app/user/controllers').user
 let team = require('./app/team/controllers').team
 let task = require('./app/task/controllers').task
 let report = require('./app/report/controllers').report
+let image = require('./app/images/controllers').image
 
 let jwt = require('./helpers/general/jwt')
 
 let app = express();
+global.__basedir = __dirname;
 
 mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
@@ -28,7 +30,11 @@ app.set('view engine', 'pug');
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Authorization, Origin, X-Requested-With, Content-Type, Accept");
-  next();
+    if ('OPTIONS' === req.method) {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
 });
 app.use(logger('dev'));
 app.use(express.json());
@@ -38,6 +44,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
+//enforce uncaught exceptions record
+process.on('uncaughtException', (exception) => {
+    console.log(exception)
+});
 // parse application/json
 app.use(bodyParser.json())
 
@@ -65,11 +75,11 @@ app.post(base_url + '/new/teammate', team.NEW_TEAMMATE);
 app.post(base_url + '/remove/teammate', team.REMOVE_TEAMMATE);
 app.post(base_url + '/activate/team', team.ACTIVATE_TEAM);
 app.post(base_url + '/merge/teams', team.MERGE_TEAMS);
+app.post(base_url + '/team/suggestions', team.SUGGEST_TEAMS);
 
 //task routes
 app.post(base_url + '/new/task', task.NEW_TASK)
 app.post(base_url + '/get/task', task.GET_TASK)
-app.post(base_url + '/get/tasks', task.GET_TASKS)
 app.post(base_url + '/get/tasks', task.GET_TASKS)
 app.post(base_url + '/edit/task', task.EDIT_TASK)
 app.post(base_url + '/update/task', task.UPDATE_TASK)
@@ -81,6 +91,9 @@ app.post(base_url + '/new/report', report.NEW_REPORT)
 app.post(base_url + '/get/report', report.GET_REPORT)
 app.post(base_url + '/get/reports', report.GET_REPORTS)
 app.post(base_url + '/draft/report', report.DRAFT_REPORT)
+
+//image routes
+app.post(base_url + '/user/profile/image', image.NEW_PROFILE_IMAGE)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

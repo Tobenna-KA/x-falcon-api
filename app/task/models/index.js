@@ -30,6 +30,10 @@ let TaskSchema  = mongoose.Schema({
         type: String,
         default: true
     },
+    level: {
+        type: Number,
+        required: true
+    },
     time_created: {
         type: Date,
         default: new Date()

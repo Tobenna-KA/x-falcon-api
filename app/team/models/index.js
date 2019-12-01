@@ -28,7 +28,7 @@ let TaskSchema = mongoose.Schema({
         type: Boolean,
         default: true
     },
-    task_level: {
+    level: {
         type: Number,
         default: 4
     },

@@ -1,20 +1,26 @@
 let User = require('../models')
 let jwt = require('../../../helpers/general/jwt')
 let helper = require('../../../helpers/general').helpers
+let Mail = require('../../mail/controller').mail
+const TokenGenerator = require('uuid-token-generator');
 
 module.exports.user = {
     NEW_USER: async (req, res) => {
-        if (req.body.email && req.body.password && req.body.first_name && req.body.last_name) {
+        if (req.body.email && req.body.first_name && req.body.last_name) {
+            let password = (req.body.password)? req.body.password : new TokenGenerator().generate(); // Default is a 128-bit token encoded in base58
+            let reset_token = new TokenGenerator().generate();
             let userData = {
                 email: req.body.email,
-                password: req.body.password,
+                password: password,
                 first_name: req.body.first_name,
                 last_name: req.body.last_name,
+                restPasswordToken: reset_token,
+                status: (req.body.status)
             }
 
             User.create(userData, async (err, user) => {
                 if (err) {
-                    let err_msg = (err.code === 11000) ? 'User with the same Email already exists' : 'Ooops something went wroncg'
+                    let err_msg = (err.code === 11000) ? 'User with the same Email already exists' : 'Ooops something went wrong'
                     res.status(200).send({ok: false, message: err_msg, auth: true})
                 } else {
 
@@ -22,7 +28,10 @@ module.exports.user = {
                     await jwt.signToken({ id: user._id, level: user.level }, (result) => {
                         token = result;
                     });
-                    res.status(200).send({ auth: true, token, user, message: 'Success', ok: true});
+                    user.password = null
+                    Mail.newUserMail({email: req.body.email, token: reset_token}, (sent) => {
+                        res.status(200).send({ auth: true, token, user, message: 'Success', ok: true});
+                    })
                 }
             });
 
@@ -62,7 +71,8 @@ module.exports.user = {
                     user.password = null
                     return res.status(200).send({auth: true, error: false, user, message: 'Success'})
                 })
-            } else res.status(200).send({auth: true, error: {'message': 'You can not access this action'}})
+            } else res.status(200).send({auth: true, error: {'message': 'All required fields must be filled'}})
+        else res.status(200).send({auth: true, error: {'message': 'You can not access this action'}})
     },
     ACTIVATE_USER: async (req, res) => {
         if (await helper.ensureUserLevelNoRes(req.headers["authorization"], 7, res)) {
@@ -71,6 +81,7 @@ module.exports.user = {
                 // update det
                 User.findOneAndUpdate({_id: req.body._id}, {$set: {status}}, {new: true}, (err, user) => {
                     if(err) return res.status(200).send({auth: true, error: {message: 'Update Failed'}});
+                    user.password = null;
                     return res.status(200).send({auth: true, error: false, message: 'Success', user})
                 })
             } else res.status(200).send({auth: true, token: null, error: {message: 'All required fields not filled!'}, ok: false});
