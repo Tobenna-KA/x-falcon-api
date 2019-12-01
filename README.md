@@ -8,6 +8,7 @@ Application for Military excercises
 $ git clone https://github.com/Tobenna-KA/x-falcon-api.git
 <p> <b>make sure you have mongodb up and running on port :27017</b> </p>
 ### Installation
+
 >$ npm install
-<br>
+
 >$ npm start
