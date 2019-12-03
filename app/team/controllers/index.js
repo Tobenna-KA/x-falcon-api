@@ -4,10 +4,12 @@ let user = require('../../user/models')
 
 module.exports.team = {
     NEW_TEAM: (req, res) => {
-        // console.log(req['authorization'])
+        console.log(req.body)
         if(helper.ensureUserLevelNoRes(req['authorization'], 7, res)) {
             if(req.body.name && req.body.description
-                && req.body.members && req.body.level && req.body.lead) {
+                && Array.isArray(req.body.members) && req.body.level && req.body.lead) {
+                if(req.body.members.length < 2)
+                    return res.status(200).send({auth: true, error: {message: 'Members must have more than one member'}})
                 //create team
                 teams.create({
                     name: req.body.name,
@@ -16,8 +18,17 @@ module.exports.team = {
                     lead: req.body.lead,
                     level: req.body.level
                 }, (err, team) => {
-                    if(err) return res.status(200).send({auth: true, error: {message: 'something went wrong while creating team'}})
-                    return res.status(200).send({auth: true, error: false, team, message: 'Success'})
+                    if (err) return res.status(200).send({
+                        auth: true,
+                        error: {message: 'something went wrong while creating team'}
+                    })
+                    user.update({_id: {$in: req.body.members}}, {$set: {has_team: true}}, {multi: true}, (err, users) => {
+                        if (err) return res.status(200).send({
+                            auth: true,
+                            error: {message: 'something went wrong while updating teammates'}
+                        })
+                        return res.status(200).send({auth: true, error: false, team, message: 'Success'})
+                    })
                 })
             }
         }
@@ -28,6 +39,7 @@ module.exports.team = {
                 //get team
                 teams.findById(req.body._id)
                     .populate('members', ['first_name', 'last_name', 'email', 'status', 'level'])
+                    .populate('lead', ['first_name', 'last_name'])
                     .exec( (err, team) => {
                     if(err) return res.status(200).send({auth: true, error: {message: 'something went wrong while getting team'}})
                     return res.status(200).send({auth: true, error: false, team})
@@ -70,7 +82,7 @@ module.exports.team = {
                 //create team
                 teams.findByIdAndUpdate(req.body._id, {
                     $push: {members: req.body.members}
-                }, {new: true}, (err, team) => {
+                }, {new: true}, (err, member) => {
                     if (err) return res.status(200).send({
                         auth: true,
                         error: {message: 'something went wrong while adding teammate'}
@@ -80,7 +92,7 @@ module.exports.team = {
                             auth: true,
                             error: {message: 'something went wrong while updating teammate details'}
                         })
-                        return res.status(200).send({auth: true, error: false, team, message: 'Success'})
+                        return res.status(200).send({auth: true, error: false, member, message: 'Success'})
                     })
                 })
             }

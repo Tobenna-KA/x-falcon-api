@@ -83,6 +83,7 @@ app.post(base_url + '/team/suggestions', team.SUGGEST_TEAMS);
 app.post(base_url + '/new/task', task.NEW_TASK)
 app.post(base_url + '/get/task', task.GET_TASK)
 app.post(base_url + '/get/tasks', task.GET_TASKS)
+app.post(base_url + '/get/team/tasks', task.GET_TEAM_TASKS)
 app.post(base_url + '/edit/task', task.EDIT_TASK)
 app.post(base_url + '/update/task', task.UPDATE_TASK)
 app.post(base_url + '/complete/task', task.COMPLETE_TASK)

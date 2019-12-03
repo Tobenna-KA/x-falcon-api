@@ -74,6 +74,16 @@ module.exports.task = {
             })
         }
     },
+    GET_TEAM_TASKS: (req, res) => {
+        if(helper.ensureUserLevelNoRes(req['authorization'], 7, res)) {
+            //get tasks
+            task_model.find({team: req.body._id})
+                .exec((err, tasks) => {
+                    if(err) return res.status(200).send({auth: true, error: {message: 'something went wrong while getting team'}})
+                    return res.status(200).send({auth: true, error: false, tasks})
+            })
+        }
+    },
     EDIT_TASK: (req, res) => {
         console.log(req.body)
         if(helper.ensureUserLevelNoRes(req['authorization'], 7, res)) {

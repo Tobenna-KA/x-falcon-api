@@ -15,11 +15,11 @@ let TaskSchema = mongoose.Schema({
         ref: 'users',
         required: true
     }],
-    lead: [{
+    lead: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'users',
         required: true
-    }],
+    },
     time_created: {
         type: Date,
         default: new Date()
