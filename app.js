@@ -65,6 +65,7 @@ app.post(base_url + '/get/user', user.GET_USER);
 app.post(base_url + '/get/users', user.GET_USERS);
 app.post(base_url + '/activate/user', user.ACTIVATE_USER);
 app.post(base_url + '/edit/user', user.EDIT_USER);
+app.post(base_url + '/suggest/team/members', user.SUGGEST_TEAM_MEMBERS);
 
 //team routes
 app.post(base_url + '/new/team', team.NEW_TEAM);
@@ -76,6 +77,7 @@ app.post(base_url + '/remove/teammate', team.REMOVE_TEAMMATE);
 app.post(base_url + '/activate/team', team.ACTIVATE_TEAM);
 app.post(base_url + '/merge/teams', team.MERGE_TEAMS);
 app.post(base_url + '/team/suggestions', team.SUGGEST_TEAMS);
+
 
 //task routes
 app.post(base_url + '/new/task', task.NEW_TASK)

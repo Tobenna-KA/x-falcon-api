@@ -1,5 +1,6 @@
 let teams = require('../models')
 let helper = require('../../../helpers/general').helpers;
+let user = require('../../user/models')
 
 module.exports.team = {
     NEW_TEAM: (req, res) => {
@@ -67,14 +68,20 @@ module.exports.team = {
         if(helper.ensureUserLevelNoRes(req['authorization'], 7, res)) {
             if(req.body._id && req.body.members) {
                 //create team
-                teams.findByIdAndUpdate({_id: req.body._id}, {
+                teams.findByIdAndUpdate(req.body._id, {
                     $push: {members: req.body.members}
                 }, {new: true}, (err, team) => {
                     if (err) return res.status(200).send({
                         auth: true,
                         error: {message: 'something went wrong while adding teammate'}
                     })
-                    return res.status(200).send({auth: true, error: false, team, message: 'Success'})
+                    user.update({_id: {$in: req.body.members}}, {$set: {has_team: true}}, {multi: true}, (err, users) => {
+                        if (err) return res.status(200).send({
+                            auth: true,
+                            error: {message: 'something went wrong while updating teammate details'}
+                        })
+                        return res.status(200).send({auth: true, error: false, team, message: 'Success'})
+                    })
                 })
             }
         }
@@ -94,7 +101,13 @@ module.exports.team = {
                         auth: true,
                         error: {message: 'something went wrong while adding teammate'}
                     })
-                    return res.status(200).send({auth: true, error: false, team, message: 'Success'})
+                    user.update({_id: {$in: req.body.members}}, {$set: {has_team: false}}, {multi: true}, (err, users) => {
+                        if (err) return res.status(200).send({
+                            auth: true,
+                            error: {message: 'something went wrong while updating teammate details'}
+                        })
+                        return res.status(200).send({auth: true, error: false, team, message: 'Success'})
+                    })
                 })
             }
         }
