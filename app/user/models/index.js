@@ -10,17 +10,26 @@ let UserSchema = new mongoose.Schema({
     },
     first_name: {
         type: String,
-        unique: true
+        required: true,
     },
     last_name: {
         type: String,
         required: true
+    },
+    identification: {
+        type: String,
+        required: true,
+        unique: true
     },
     level: {
         type: Number,
         default: 4,
     },
     status: {
+        type: Boolean,
+        default: false,
+    },
+    has_team: {
         type: Boolean,
         default: false,
     },

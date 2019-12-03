@@ -6,22 +6,24 @@ const TokenGenerator = require('uuid-token-generator');
 
 module.exports.user = {
     NEW_USER: async (req, res) => {
-        if (req.body.email && req.body.first_name && req.body.last_name) {
-            let password = (req.body.password)? req.body.password : new TokenGenerator().generate(); // Default is a 128-bit token encoded in base58
-            let reset_token = new TokenGenerator().generate();
+        if (req.body.email && req.body.first_name && req.body.last_name && req.body.identification) {
+            let password = (req.body.password)? req.body.password : await new TokenGenerator().generate(); // Default is a 128-bit token encoded in base58
+            let reset_token = await new TokenGenerator().generate();
             let userData = {
                 email: req.body.email,
                 password: password,
                 first_name: req.body.first_name,
                 last_name: req.body.last_name,
                 restPasswordToken: reset_token,
-                status: (req.body.status)
+                identification: req.body.identification,
+                status: (req.body.status === true)
             }
 
             User.create(userData, async (err, user) => {
+                console.log(err, userData)
                 if (err) {
                     let err_msg = (err.code === 11000) ? 'User with the same Email already exists' : 'Ooops something went wrong'
-                    res.status(200).send({ok: false, message: err_msg, auth: true})
+                    res.status(200).send({ok: false, error: {message: err_msg}, auth: true})
                 } else {
 
                     let token = null
@@ -57,11 +59,12 @@ module.exports.user = {
     EDIT_USER: async (req, res) => {
         if (await helper.ensureUserLevelNoRes(req.headers["authorization"], 7, res) ||
             await helper._ensureIsThisUser(req.headers['authorization'], req.body._id))
-            if (req.body.first_name && req.body.last_name && req.body.level) {
+            if (req.body.first_name && req.body.last_name && req.body.level && req.body.identification) {
                 User.findOneAndUpdate({_id: req.body._id}, {
                     _id: req.body._id,
                     first_name: req.body.first_name,
                     last_name: req.body.last_name,
+                    identification: req.body.identification,
                     level: req.body.level
                 }, {new: true}, (err, user) => {
                     if (err) return res.status(200).send({auth: true, error: {message: 'Ooops something went wrong'}, err})
@@ -86,5 +89,20 @@ module.exports.user = {
                 })
             } else res.status(200).send({auth: true, token: null, error: {message: 'All required fields not filled!'}, ok: false});
         } else return res.status(200).send({auth: true, error: {'message': 'You can not access this action'}})
+    },
+    SUGGEST_TEAM_MEMBERS: async (req, res) => {
+        User.find({
+            $and: [
+                {
+                    has_team: false,
+                    level: {$gte: req.body.param}
+                }
+            ]
+        })
+        .select('first_name last_name')
+        .exec((err, users) => {
+            console.log(err, users)
+            res.status(200).send({auth: true, error: false, users})
+        });
     }
 };
