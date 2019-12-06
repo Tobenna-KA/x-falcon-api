@@ -11,6 +11,7 @@ let team = require('./app/team/controllers').team
 let task = require('./app/task/controllers').task
 let report = require('./app/report/controllers').report
 let image = require('./app/images/controllers').image
+let config = require('./config')
 
 let jwt = require('./helpers/general/jwt')
 
@@ -21,7 +22,8 @@ mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
 //connect to db
-mongoose.connect('mongodb://localhost:27017/x_falcon', {useNewUrlParser: true});
+mongoose.connect(config.MONGODB_URI, {useNewUrlParser: true});
+// mongoose.connect('mongodb://localhost:27017/x_falcon', {useNewUrlParser: true});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
